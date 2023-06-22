@@ -1,11 +1,13 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "Task.hpp"
+#include <memory>
 
 using namespace water_probe_acquanativa_ap3;
 
 Task::Task(std::string const& name)
     : TaskBase(name)
+    , m_driver(nullptr)
 {
 }
 
@@ -23,6 +25,9 @@ bool Task::configureHook()
 {
     if (! TaskBase::configureHook())
         return false;
+
+    m_driver = std::make_unique<Driver>(_device_address.get());
+
     return true;
 }
 bool Task::startHook()
@@ -34,6 +39,12 @@ bool Task::startHook()
 void Task::updateHook()
 {
     TaskBase::updateHook();
+
+    if(_data.connected())
+    {
+        water_probe_acquanativa_ap3::ProbeMeasurements sample;
+        _data.write(sample);
+    }
 }
 void Task::errorHook()
 {
