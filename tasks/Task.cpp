@@ -1,6 +1,7 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "Task.hpp"
+#include <iodrivers_base/ConfigureGuard.hpp>
 #include <memory>
 
 using namespace water_probe_acquanativa_ap3;
@@ -23,13 +24,24 @@ Task::~Task()
 
 bool Task::configureHook()
 {
+    std::unique_ptr<Driver> driver( new Driver(_device_address.get()));
+
+    iodrivers_base::ConfigureGuard guard(this);
+    const std::string device_port = _io_port.get();
+    if(!device_port.empty()){
+        driver->openURI(device_port);
+    }
+    setDriver(driver.get());
+
     if (! TaskBase::configureHook())
         return false;
 
-    m_driver = std::make_unique<Driver>(_device_address.get());
+    m_driver = std::move(driver);
+    guard.commit();
 
     return true;
 }
+
 bool Task::startHook()
 {
     if (! TaskBase::startHook())
