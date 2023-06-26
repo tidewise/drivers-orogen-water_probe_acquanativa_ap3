@@ -52,11 +52,6 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
-    if(_data.connected())
-    {
-        water_probe_acquanativa_ap3::ProbeMeasurements sample;
-        _data.write(sample);
-    }
 }
 void Task::errorHook()
 {
@@ -69,4 +64,15 @@ void Task::stopHook()
 void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
+}
+
+void 
+Task::processIO()
+{
+    if(_data.connected())    {
+        water_probe_acquanativa_ap3::ProbeMeasurements sample(
+            m_driver->getMeasurements()
+        );
+        _data.write(sample);
+    }
 }

@@ -100,6 +100,8 @@ tasks/Task.cpp, and will be put in the water_probe_acquanativa_ap3 namespace.
          * before calling start() again.
          */
         void cleanupHook();
+
+        void processIO() override;
     };
 }
 
