@@ -2,6 +2,8 @@ name "water_probe_acquanativa_ap3"
 # Optionally declare the version number
 # version "0.1"
 
+using_task_library "iodrivers_base"
+
 # If new data types need to be defined, they have to be put in a separate C++
 # header, and this header will be loaded here
 import_types_from "water_probe_acquanativa_ap3Types.hpp"
@@ -19,7 +21,7 @@ import_types_from "water_probe_acquanativa_ap3/ProbeMeasurements.hpp"
 #
 # The corresponding C++ class can be edited in tasks/Task.hpp and
 # tasks/Task.cpp, and will be put in the water_probe_acquanativa_ap3 namespace.
-task_context "Task" do
+task_context "Task", subclasses: "iodrivers_base::Task" do
     # This is the default from now on, and should not be removed. Rock will
     # transition to a setup where all components use a configuration step.
     needs_configuration
@@ -27,7 +29,7 @@ task_context "Task" do
     # Data output, each field reflects a mesurement
     output_port "data", "water_probe_acquanativa_ap3/ProbeMeasurements"
 
-    # Port for sensor connection
+    # Device address in the Modbus bus
     property "device_address", "int"
 
     # If you want that component's updateHook() to be executed when the "input"
