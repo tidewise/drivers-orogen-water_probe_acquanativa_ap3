@@ -16,4 +16,5 @@
   -->
   <depend package="drivers/orogen/iodrivers_base" />
   <depend package="drivers/water_probe_acquanativa_ap3" />
+  <test_depend name="tools/syskit" />
 </package>
