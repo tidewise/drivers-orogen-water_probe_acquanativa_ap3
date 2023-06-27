@@ -30,7 +30,7 @@ task_context "Task", subclasses: "iodrivers_base::Task" do
     output_port "data", "water_probe_acquanativa_ap3/ProbeMeasurements"
 
     # Device address in the Modbus bus
-    property "device_address", "int"
+    property "device_address", "/int", -1
 
     # If you want that component's updateHook() to be executed when the "input"
     # port gets data, uncomment this and comment the 'periodic' line

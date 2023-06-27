@@ -24,7 +24,11 @@ Task::~Task()
 
 bool Task::configureHook()
 {
-    std::unique_ptr<Driver> driver( new Driver(_device_address.get()));
+    const int device_modbus_address = _device_address.get();
+    if(device_modbus_address < 0) {
+        return false;
+    }
+    std::unique_ptr<Driver> driver( new Driver(device_modbus_address));
 
     iodrivers_base::ConfigureGuard guard(this);
     const std::string device_port = _io_port.get();
