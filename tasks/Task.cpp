@@ -66,13 +66,11 @@ void Task::cleanupHook()
     TaskBase::cleanupHook();
 }
 
-void 
+void
 Task::processIO()
 {
-    if(_data.connected())    {
-        water_probe_acquanativa_ap3::ProbeMeasurements sample(
-            m_driver->getMeasurements()
-        );
-        _data.write(sample);
-    }
+    water_probe_acquanativa_ap3::ProbeMeasurements sample(
+        m_driver->getMeasurements()
+    );
+    _data.write(sample);
 }
