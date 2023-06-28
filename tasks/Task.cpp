@@ -55,7 +55,10 @@ bool Task::startHook()
 void Task::updateHook()
 {
     TaskBase::updateHook();
-
+    water_probe_acquanativa_ap3::ProbeMeasurements sample(
+        m_driver->getMeasurements()
+    );
+    _data.write(sample);
 }
 void Task::errorHook()
 {
@@ -73,8 +76,4 @@ void Task::cleanupHook()
 void
 Task::processIO()
 {
-    water_probe_acquanativa_ap3::ProbeMeasurements sample(
-        m_driver->getMeasurements()
-    );
-    _data.write(sample);
 }
