@@ -33,7 +33,8 @@ bool Task::configureHook()
     iodrivers_base::ConfigureGuard guard(this);
 
     const std::string device_port = _io_port.get();
-    driver->openURI(device_port);
+    if(not device_port.empty())
+        driver->openURI(device_port);
 
     setDriver(driver.get());
     if (! TaskBase::configureHook())
