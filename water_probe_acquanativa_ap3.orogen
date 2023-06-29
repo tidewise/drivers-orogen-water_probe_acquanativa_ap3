@@ -27,7 +27,7 @@ task_context "Task", subclasses: "iodrivers_base::Task" do
     needs_configuration
 
     # Data output, each field reflects a mesurement
-    output_port "data", "water_probe_acquanativa_ap3/ProbeMeasurements"
+    output_port "probe_measurements", "water_probe_acquanativa_ap3/ProbeMeasurements"
 
     # Device address in the Modbus bus
     property "device_address", "/int", -1

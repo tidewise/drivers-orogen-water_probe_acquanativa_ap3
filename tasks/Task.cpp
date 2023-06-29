@@ -58,7 +58,7 @@ void Task::updateHook()
     water_probe_acquanativa_ap3::ProbeMeasurements sample(
         m_driver->getMeasurements()
     );
-    _data.write(sample);
+    _probe_measurements.write(sample);
 }
 void Task::errorHook()
 {
