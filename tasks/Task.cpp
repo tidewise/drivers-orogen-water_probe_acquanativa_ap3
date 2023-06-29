@@ -76,4 +76,6 @@ void Task::cleanupHook()
 void
 Task::processIO()
 {
+    // Because that Modbus is a master/slave protocol, this method is never called in the
+    // iodrivers_base::Task. So it is left empty.
 }
