@@ -100,7 +100,8 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
                 have_one_new_sample task.probe_measurements_port
             end
             now = Time.now
-            assert_in_delta(now, sample.time, Time.now - read_request_time)
+            dt = now - read_request_time
+            assert_in_delta(now, sample.time, dt)
         end
 
         it "successfully read all measurements" do
