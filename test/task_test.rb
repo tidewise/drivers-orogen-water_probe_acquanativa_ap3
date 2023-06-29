@@ -16,6 +16,7 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
     attr_reader :reader
     attr_reader :writer
 
+    attr_reader :probe_measurements_raw
     include ModbusHelpers
 
     def mock_all_sensor_registers
@@ -35,20 +36,38 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
             "longitude" => 12
         }
 
-        max_value = 2**16
-        modbus_set(registers["dissolved_oxygen"], rand(max_value))
-        modbus_set(registers["dissolved_oxygen_sat"], rand(max_value))
-        modbus_set(registers["temperature"], rand(max_value))
-        modbus_set(registers["ph"], rand(max_value))
-        modbus_set(registers["conductivity"], rand(max_value))
-        modbus_set(registers["salinity"], rand(max_value))
-        modbus_set(registers["dissolved_solids"], rand(max_value))
-        modbus_set(registers["specific_gravity"], rand(max_value))
-        modbus_set(registers["orp"], rand(max_value))
-        modbus_set(registers["turbity"], rand(max_value))
-        modbus_set(registers["height"], rand(max_value))
-        modbus_set(registers["latitude"], rand(max_value))
-        modbus_set(registers["longitude"], rand(max_value))
+        @probe_measurements_raw = [756, 85, 200, 646, 156, 126, 1256, 32, 40, 3, 500, 1, 76]
+        modbus_set(registers["dissolved_oxygen"], @probe_measurements_raw[0])
+        modbus_set(registers["dissolved_oxygen_sat"], @probe_measurements_raw[1])
+        modbus_set(registers["temperature"], @probe_measurements_raw[2])
+        modbus_set(registers["ph"], @probe_measurements_raw[3])
+        modbus_set(registers["conductivity"], @probe_measurements_raw[4])
+        modbus_set(registers["salinity"], @probe_measurements_raw[5])
+        modbus_set(registers["dissolved_solids"], @probe_measurements_raw[6])
+        modbus_set(registers["specific_gravity"], @probe_measurements_raw[7])
+        modbus_set(registers["orp"], @probe_measurements_raw[8])
+        modbus_set(registers["turbity"], @probe_measurements_raw[9])
+        modbus_set(registers["height"], @probe_measurements_raw[10])
+        modbus_set(registers["latitude"], @probe_measurements_raw[11])
+        modbus_set(registers["longitude"], @probe_measurements_raw[12])
+    end
+
+    def get_expected_sample
+        sample = Types.water_probe_acquanativa_ap3.ProbeMeasurements.new
+        sample.concentration = @probe_measurements_raw[0] * 1e-5
+        sample.saturation = @probe_measurements_raw[1] * 1e-2
+        sample.temperature.kelvin = 275.15;
+        sample.ph = @probe_measurements_raw[3] * 1e-2;
+        sample.conductivity = @probe_measurements_raw[4] * 1e-10;
+        sample.salinity = @probe_measurements_raw[5] * 1e-2
+        sample.dissolved_solids = @probe_measurements_raw[6] * 1e-2
+        sample.specific_gravity = @probe_measurements_raw[7] * 1e-2
+        sample.ORP = @probe_measurements_raw[8] * 1e-3
+        sample.turbity = @probe_measurements_raw[9]
+        sample.height = @probe_measurements_raw[10]
+        sample.latitude = @probe_measurements_raw[11] * 1e-2
+        sample.longitude = @probe_measurements_raw[12] * 1e-2
+        sample
     end
 
     before do
@@ -85,11 +104,16 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
         end
 
         it "successfully read all measurements" do
-            modbus_expect_execution(@writer, @reader) do
+            sample = modbus_expect_execution(@writer, @reader) do
                 mock_all_sensor_registers
             end.to do
                 have_one_new_sample task.probe_measurements_port
             end
+
+            expected_sample = get_expected_sample
+            expected_sample.time = sample.time
+
+            assert_equal sample, expected_sample
         end
 
         it "fail when measurements are not avaiable" do
