@@ -73,6 +73,17 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
             modbus_configure_and_start
         end
 
+        it "check if the sample timestamp is updated" do
+            read_request_time = Time.now
+            sample = modbus_expect_execution(@writer, @reader) do
+                mock_all_sensor_registers
+            end.to do
+                have_one_new_sample task.probe_measurements_port
+            end
+            now = Time.now
+            assert_in_delta(now, sample.time, Time.now - read_request_time)
+        end
+
         it "successfully read all measurements" do
             modbus_expect_execution(@writer, @reader) do
                 mock_all_sensor_registers
@@ -86,6 +97,5 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
                 have_no_new_sample task.probe_measurements_port, at_least_during: 0.5
             end
         end
-
     end
 end
