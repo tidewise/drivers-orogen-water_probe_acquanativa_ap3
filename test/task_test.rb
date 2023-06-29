@@ -83,8 +83,9 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
 
         it "fail when measurements are not avaiable" do
             modbus_expect_execution(@writer, @reader) do
-                have_no_new_sample task.data_port
+                have_no_new_sample task.data_port, at_least_during: 0.5
             end
         end
+
     end
 end
