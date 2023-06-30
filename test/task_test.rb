@@ -21,16 +21,16 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
 
     def mock_all_sensor_registers
         registers = {
-            "dissolved_oxygen" => 0,
-            "dissolved_oxygen_sat" => 1,
+            "oxygen_concentration" => 0,
+            "oxygen_saturation" => 1,
             "temperature" => 2,
-            "ph" => 3,
+            "pH" => 3,
             "conductivity" => 4,
             "salinity" => 5,
             "dissolved_solids" => 6,
             "specific_gravity" => 7,
-            "orp" => 8,
-            "turbity" => 9,
+            "oxidation_reduction_potential" => 8,
+            "turbidity" => 9,
             "height" => 10,
             "latitude" => 11,
             "longitude" => 12
