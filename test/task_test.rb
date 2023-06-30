@@ -54,16 +54,16 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
 
     def get_expected_sample
         sample = Types.water_probe_acquanativa_ap3.ProbeMeasurements.new
-        sample.concentration = @probe_measurements_raw[0] * 1e-5
-        sample.saturation = @probe_measurements_raw[1] * 1e-2
+        sample.oxygen_concentration = @probe_measurements_raw[0] * 1e-8
+        sample.oxygen_saturation = @probe_measurements_raw[1] * 1e-4
         sample.temperature.kelvin = 275.15;
-        sample.ph = @probe_measurements_raw[3] * 1e-2;
+        sample.pH = @probe_measurements_raw[3] * 1e-2;
         sample.conductivity = @probe_measurements_raw[4] * 1e-10;
         sample.salinity = @probe_measurements_raw[5] * 1e-2
-        sample.dissolved_solids = @probe_measurements_raw[6] * 1e-2
+        sample.dissolved_solids = @probe_measurements_raw[6] * 1e-8
         sample.specific_gravity = @probe_measurements_raw[7] * 1e-2
-        sample.ORP = @probe_measurements_raw[8] * 1e-3
-        sample.turbity = @probe_measurements_raw[9]
+        sample.oxidation_reduction_potential = @probe_measurements_raw[8] * 1e-3
+        sample.turbidity = @probe_measurements_raw[9]
         sample.height = @probe_measurements_raw[10]
         sample.latitude = @probe_measurements_raw[11] * 1e-2
         sample.longitude = @probe_measurements_raw[12] * 1e-2
