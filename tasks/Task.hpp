@@ -4,6 +4,7 @@
 #define WATER_PROBE_ACQUANATIVA_AP3_TASK_TASK_HPP
 
 #include "water_probe_acquanativa_ap3/TaskBase.hpp"
+#include <water_probe_acquanativa_ap3/Driver.hpp>
 
 namespace water_probe_acquanativa_ap3{
 
@@ -28,7 +29,7 @@ tasks/Task.cpp, and will be put in the water_probe_acquanativa_ap3 namespace.
     {
 	friend class TaskBase;
     protected:
-
+        std::unique_ptr<Driver> m_driver;
 
 
     public:
@@ -99,6 +100,8 @@ tasks/Task.cpp, and will be put in the water_probe_acquanativa_ap3 namespace.
          * before calling start() again.
          */
         void cleanupHook();
+
+        void processIO() override;
     };
 }
 
