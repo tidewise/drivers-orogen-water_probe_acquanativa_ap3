@@ -29,8 +29,14 @@ task_context "Task", subclasses: "iodrivers_base::Task" do
     # Data output, each field reflects a mesurement
     output_port "probe_measurements", "water_probe_acquanativa_ap3/ProbeMeasurements"
 
+    # Amount of consecutive timeouts allowed before the component enters the
+    # TIMEOUT state
+    property "max_consecutive_timeouts", "/int", 10
+
     # Device address in the Modbus bus
     property "device_address", "/int", -1
+
+    exception_states :TIMEOUT
 
     # If you want that component's updateHook() to be executed when the "input"
     # port gets data, uncomment this and comment the 'periodic' line

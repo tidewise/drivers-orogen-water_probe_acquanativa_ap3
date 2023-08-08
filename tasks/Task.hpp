@@ -31,6 +31,7 @@ tasks/Task.cpp, and will be put in the water_probe_acquanativa_ap3 namespace.
     protected:
         std::unique_ptr<Driver> m_driver;
 
+        int m_timeouts = 0;
 
     public:
         /** TaskContext constructor for Task

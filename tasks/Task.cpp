@@ -3,6 +3,7 @@
 #include "Task.hpp"
 #include <iodrivers_base/ConfigureGuard.hpp>
 #include <memory>
+#include <modbus/RTU.hpp>
 
 using namespace water_probe_acquanativa_ap3;
 
@@ -50,15 +51,25 @@ bool Task::startHook()
 {
     if (! TaskBase::startHook())
         return false;
+    m_timeouts = 0;
     return true;
 }
 void Task::updateHook()
 {
     TaskBase::updateHook();
-    water_probe_acquanativa_ap3::ProbeMeasurements sample(
-        m_driver->getMeasurements()
-    );
-    _probe_measurements.write(sample);
+
+    try {
+        _probe_measurements.write(m_driver->getMeasurements());
+        m_timeouts = 0;
+    }
+    catch (modbus::RTU::TooSmall&) {
+        m_timeouts++;
+
+        if (m_timeouts > _max_consecutive_timeouts.get()) {
+            exception(TIMEOUT);
+            return;
+        }
+    }
 }
 void Task::errorHook()
 {
