@@ -36,7 +36,9 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
             "longitude" => 12
         }
 
-        @probe_measurements_raw = [756, 85, 200, 646, 156, 126, 1256, 32, 40, 3, 500, 1, 76]
+        @probe_measurements_raw = [
+            756, 85, 2290, 646, 9999, 4739, 8888, 32, 40, 3, 500, 1, 76
+        ]
         modbus_set(registers["oxygen_concentration"], @probe_measurements_raw[0])
         modbus_set(registers["oxygen_saturation"], @probe_measurements_raw[1])
         modbus_set(registers["temperature"], @probe_measurements_raw[2])
@@ -50,24 +52,6 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
         modbus_set(registers["height"], @probe_measurements_raw[10])
         modbus_set(registers["latitude"], @probe_measurements_raw[11])
         modbus_set(registers["longitude"], @probe_measurements_raw[12])
-    end
-
-    def get_expected_sample
-        sample = Types.water_probe_acquanativa_ap3.ProbeMeasurements.new
-        sample.oxygen_concentration = @probe_measurements_raw[0] * 1e-8
-        sample.oxygen_saturation = @probe_measurements_raw[1] * 1e-4
-        sample.temperature.kelvin = 275.15;
-        sample.pH = @probe_measurements_raw[3] * 1e-2;
-        sample.conductivity = @probe_measurements_raw[4] * 1e-10;
-        sample.salinity = @probe_measurements_raw[5] * 1e-2
-        sample.dissolved_solids = @probe_measurements_raw[6] * 1e-8
-        sample.specific_gravity = @probe_measurements_raw[7] * 1e-2
-        sample.oxidation_reduction_potential = @probe_measurements_raw[8] * 1e-3
-        sample.turbidity = @probe_measurements_raw[9]
-        sample.height = @probe_measurements_raw[10]
-        sample.latitude = @probe_measurements_raw[11] * 1e-2
-        sample.longitude = @probe_measurements_raw[12] * 1e-2
-        sample
     end
 
     before do
@@ -105,16 +89,27 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
         end
 
         it "successfully read all measurements" do
-            sample = modbus_expect_execution(@writer, @reader) do
+            measurements = modbus_expect_execution(@writer, @reader) do
                 mock_all_sensor_registers
             end.to do
                 have_one_new_sample task.probe_measurements_port
             end
 
-            expected_sample = get_expected_sample
-            expected_sample.time = sample.time
-
-            assert_equal sample, expected_sample
+            assert_in_delta(756 / 100.0 * 1e-6 / 1e-3, measurements.oxygen_concentration)
+            assert_in_delta(85 * 1e-4, measurements.oxygen_saturation)
+            assert_in_delta(22.9 + 273.15, measurements.temperature.kelvin)
+            assert_in_delta(646 / 100.0, measurements.pH)
+            assert_in_delta(9999, measurements.raw_conductivity)
+            assert_in_delta(65_300 * 1e-6 / 1e-2, measurements.conductivity, 1e-4)
+            assert_in_delta(47.39 * 1e-3, measurements.salinity)
+            assert_in_delta(8888, measurements.raw_dissolved_solids)
+            assert_in_delta(42_445 / 1e6, measurements.dissolved_solids)
+            assert_in_delta(32 / 100.0, measurements.specific_gravity)
+            assert_in_delta(40 * 1e-3, measurements.oxidation_reduction_potential)
+            assert_in_delta(3, measurements.turbidity)
+            assert_in_delta(500, measurements.height)
+            assert_in_delta(1 / 100.0, measurements.latitude)
+            assert_in_delta(76 / 100.0, measurements.longitude)
         end
 
         it "fail when measurements are not avaiable" do
