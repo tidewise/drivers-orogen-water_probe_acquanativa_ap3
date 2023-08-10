@@ -72,11 +72,12 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
     describe "getting new measurements" do
         before do
             task.properties.device_address = 57
-            task.properties.io_read_timeout = Time.at(2)
+            task.properties.io_read_timeout = Time.at(1)
+            task.properties.max_consecutive_timeouts = 1
             modbus_configure_and_start
         end
 
-        it "check if the sample timestamp is updated" do
+        it "sets the sample timestamp's to the reception time" do
             read_request_time = Time.now
             sample = modbus_expect_execution(@writer, @reader) do
                 mock_all_sensor_registers
@@ -88,7 +89,7 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
             assert_in_delta(now, sample.time, dt)
         end
 
-        it "successfully read all measurements" do
+        it "reports all measurements" do
             measurements = modbus_expect_execution(@writer, @reader) do
                 mock_all_sensor_registers
             end.to do
@@ -112,7 +113,43 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
             assert_in_delta(76 / 100.0, measurements.longitude)
         end
 
-        it "fail when measurements are not avaiable" do
+        it "does not output anything if there are no measurements " do
+            modbus_expect_execution(@writer, @reader) do
+                have_no_new_sample task.probe_measurements_port, at_least_during: 0.5
+            end
+        end
+
+        it "times out if no answer comes after the configured amount of tries" do
+            tic = Time.now
+            expect_execution.timeout(10).to { emit task.timeout_event }
+            # 3s default period * 1 times + 1s read timeout => 7s total
+            assert_in_delta 7, (Time.now - tic), 0.5
+        end
+
+        it "allows for a configured amount of retries if the device does not answer" do
+            expect_execution.timeout(10).to { not_emit task.timeout_event, within: 5 }
+            @reader.clear
+            modbus_expect_execution(@writer, @reader) do
+                mock_all_sensor_registers
+            end.to do
+                have_one_new_sample task.probe_measurements_port
+            end
+        end
+
+        it "resets the number of allowed timeouts after a successful read" do
+            expect_execution.timeout(10).to { not_emit task.timeout_event, within: 5 }
+            @reader.clear
+            modbus_expect_execution(@writer, @reader) do
+                mock_all_sensor_registers
+            end.to do
+                have_one_new_sample task.probe_measurements_port
+            end
+            expect_execution.timeout(10).to { not_emit task.timeout_event, within: 5 }
+            @reader.clear
+        end
+
+        it "retries the configured amount of times" do
+            # Do nothing for 10s
             modbus_expect_execution(@writer, @reader) do
                 have_no_new_sample task.probe_measurements_port, at_least_during: 0.5
             end
