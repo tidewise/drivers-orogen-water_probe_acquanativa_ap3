@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 using_task_library "iodrivers_base"
 require "iodrivers_base/orogen_test_helpers"
 
@@ -5,7 +7,6 @@ require_relative "modbus_helpers.rb"
 
 using_task_library "water_probe_acquanativa_ap3"
 import_types_from "water_probe_acquanativa_ap3"
-
 
 describe OroGen.water_probe_acquanativa_ap3.Task do
     include IODriversBase::OroGenTestHelpers
@@ -119,13 +120,6 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
             end
         end
 
-        it "times out if no answer comes after the configured amount of tries" do
-            tic = Time.now
-            expect_execution.timeout(10).to { emit task.timeout_event }
-            # 3s default period * 1 times + 1s read timeout => 7s total
-            assert_in_delta 7, (Time.now - tic), 0.5
-        end
-
         it "allows for a configured amount of retries if the device does not answer" do
             expect_execution.timeout(10).to { not_emit task.timeout_event, within: 5 }
             @reader.clear
@@ -147,12 +141,35 @@ describe OroGen.water_probe_acquanativa_ap3.Task do
             expect_execution.timeout(10).to { not_emit task.timeout_event, within: 5 }
             @reader.clear
         end
+    end
 
-        it "retries the configured amount of times" do
-            # Do nothing for 10s
-            modbus_expect_execution(@writer, @reader) do
-                have_no_new_sample task.probe_measurements_port, at_least_during: 0.5
-            end
+    it "times out if no answer comes after the configured amount of tries" do
+        task.properties.device_address = 57
+        task.properties.io_read_timeout = Time.at(1)
+        task.properties.max_consecutive_timeouts = 1
+        modbus_configure_and_start
+
+        modbus_expect_execution(@writer, @reader) do
+            mock_all_sensor_registers
+        end.to do
+            have_one_new_sample task.probe_measurements_port
         end
+        tic = Time.now
+
+        expect_execution.timeout(10).to { emit task.timeout_event }
+        now = Time.now
+        # There is variability in how long the first modbus_expect_execution takes to
+        # finish due to the time it takes dealing with the many modbus replies/requests.
+        # Because of that, tic is behind the actual timeout timer start by ~0.250ms
+        # (without cpu restrictions).
+        #
+        # We account for that variability by adding a threshold of 0.5s
+        # in the time it takes to emit the timeout event. The expected time should be:
+        #
+        # 3s default period, 0s read timeout: 0 consecutive timeouts
+        # 4s default period, 1s read timeout: 1 consecutive timeouts
+        # 6s default period, 0s read timeout: 1 consecutive timeouts
+        # 7s default period, 1s read timeout: 2 consecutive timeouts => trigger timeout
+        assert_includes (6.5..7.5), (now - tic)
     end
 end
